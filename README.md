@@ -5,6 +5,9 @@
 [![npm version](https://img.shields.io/npm/v/@pritiranjan/hl7v2.svg)](https://www.npmjs.com/package/@pritiranjan/hl7v2)
 [![CI](https://github.com/hkpritiranjan/hl7v2/actions/workflows/ci.yml/badge.svg)](https://github.com/hkpritiranjan/hl7v2/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-hl7v2--react.vercel.app-3b9eff?logo=vercel&logoColor=white)](https://hl7v2-react.vercel.app)
+
+**[🔴 Live Demo →](https://hl7v2-react.vercel.app)** — paste any HL7 message and see it parsed in real time. No installation required.
 
 HL7 v2 is the most widely deployed healthcare messaging standard in the world — driving lab orders, ADT admissions, radiology reports, billing workflows, and much more. Yet every existing JavaScript library for it is either unmaintained, poorly typed, or missing key capabilities.
 
@@ -33,6 +36,7 @@ HL7 v2 is the most widely deployed healthcare messaging standard in the world �
   - [Date / time utilities](#date--time-utilities)
 - [HL7Message structure](#hl7message-structure)
 - [Real-world examples](#real-world-examples)
+- [Live demo](#live-demo)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -420,6 +424,14 @@ function getPatientIds(rawMessage: string) {
   }));
 }
 ```
+
+---
+
+## Live demo
+
+An interactive React demo is deployed at **https://hl7v2-react.vercel.app**.
+
+Paste any HL7 v2.x message (ADT, ORU, ORM, or your own) into the left panel and see it parsed into structured cards in real time — patient identity, visit details, lab results with flag highlighting, and more. Source: [hkpritiranjan/hl7v2-react](https://github.com/hkpritiranjan/hl7v2-react).
 
 ---
 
