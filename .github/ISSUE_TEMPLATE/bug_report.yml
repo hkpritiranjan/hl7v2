@@ -1,0 +1,67 @@
+name: Bug report
+description: Something parses, encodes, or queries incorrectly
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for filing a bug. Please fill in as much detail as possible so we can reproduce it quickly.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the incorrect behaviour.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: |
+        Paste the smallest HL7 message and the code that demonstrates the bug.
+      placeholder: |
+        ```typescript
+        import { parse } from 'hl7v2';
+        const msg = parse(`MSH|^~\\&|SEND|FAC|RECV|FAC2|20240315||ADT^A01|001|P|2.5\rPID|1||MRN||Doe^John`);
+        console.log(msg.messageType.event); // expected 'A01', got ''
+        ```
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: hl7v2 version
+      placeholder: e.g. 1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js version
+      placeholder: e.g. 20.11.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: hl7-version
+    attributes:
+      label: HL7 message version
+      options:
+        - v2.1
+        - v2.2
+        - v2.3
+        - v2.3.1
+        - v2.4
+        - v2.5
+        - v2.5.1
+        - v2.6
+        - v2.7
+        - v2.7.1
+        - v2.8
+        - Other / unknown
+    validations:
+      required: false

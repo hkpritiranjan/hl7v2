@@ -1,0 +1,47 @@
+name: Feature request
+description: Suggest a new capability or improvement
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest an improvement. Feature requests that include a concrete HL7 use-case move faster through review.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the real-world HL7 integration scenario that motivated this request.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: |
+        How would you like the library to behave? If you have a preferred API shape, sketch it here.
+      placeholder: |
+        ```typescript
+        // e.g. new NTE typed segment
+        import { NTE } from 'hl7v2/segments';
+        const nte = new NTE(segment(msg, 'NTE'), msg.encoding);
+        nte.comment(); // → 'Patient is allergic to penicillin'
+        ```
+    validations:
+      required: false
+
+  - type: textarea
+    id: hl7-spec
+    attributes:
+      label: HL7 specification reference
+      description: If this relates to a specific segment, field, or table, paste the HL7 spec reference here.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Willing to contribute?
+      options:
+        - label: I am willing to submit a pull request for this feature.

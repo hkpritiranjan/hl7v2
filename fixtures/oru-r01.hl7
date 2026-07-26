@@ -1,0 +1,15 @@
+MSH|^~\&|LAB_SYSTEM|CENTRAL_LAB|EHR_SYSTEM|REGIONAL_HEALTH|20240315150055||ORU^R01^ORU_R01|MSG000002|P|2.5.1|||NE|AL|USA
+PID|1||MRN123456^^^HOSPITAL^MR||Doe^John^Allen^Jr^Mr^MD||19800305|M|||123 Main Street^Apt 4B^Boston^MA^02101^USA^H||617-555-0100|||||||123-45-6789
+PV1|1|I|CARDIOLOGY^4A^101^HOSPITAL|||1234567^Smith^Richard^J^MD^^NPI^^MD||||||||||VN1001001^^^HOSPITAL^VN|||||||||||||||||||||||||20240315143022
+ORC|RE|ORD0001^EHR|FIL0001^LAB|||||||20240315144500|12345^Smith^Patricia^A^^NPI||1234567^Smith^Richard^J^MD^^NPI|CENTRAL_LAB||||20240315144500||LAB
+OBR|1|ORD0001^EHR|FIL0001^LAB|CBC^Complete Blood Count^LN|||20240315144500|||||||||1234567^Smith^Richard^J^MD^^NPI||||||20240315145800|||F
+OBX|1|NM|718-7^Hemoglobin [Mass/volume] in Blood^LN||13.5|g/dL^grams per deciliter^UCUM|13.5-17.5|N|||F|||20240315145800|CENTRAL_LAB|9876543^Jones^Mary^L^MT^^NPI
+OBX|2|NM|4544-3^Hematocrit [Volume Fraction] of Blood^LN||41.2|%^percent^UCUM|41.0-53.0|N|||F|||20240315145800|CENTRAL_LAB|9876543^Jones^Mary^L^MT^^NPI
+OBX|3|NM|6690-2^Leukocytes [#/volume] in Blood by Automated count^LN||11.8|10*3/uL^Thousands per microliter^UCUM|4.5-11.0|H|||F|||20240315145800|CENTRAL_LAB|9876543^Jones^Mary^L^MT^^NPI
+OBX|4|NM|777-3^Platelets [#/volume] in Blood by Automated count^LN||245|10*3/uL^Thousands per microliter^UCUM|150-400|N|||F|||20240315145800|CENTRAL_LAB|9876543^Jones^Mary^L^MT^^NPI
+OBX|5|NM|2093-3^Cholesterol [Mass/volume] in Serum or Plasma^LN||215|mg/dL^milligrams per deciliter^UCUM|<200|H|||F|||20240315145800|CENTRAL_LAB|9876543^Jones^Mary^L^MT^^NPI
+OBX|6|NM|2089-1^Cholesterol in LDL [Mass/volume] in Serum or Plasma^LN||148|mg/dL^milligrams per deciliter^UCUM|<100|HH|||F|||20240315145800|CENTRAL_LAB|9876543^Jones^Mary^L^MT^^NPI
+OBX|7|NM|2085-9^Cholesterol in HDL [Mass/volume] in Serum or Plasma^LN||42|mg/dL^milligrams per deciliter^UCUM|>40|N|||F|||20240315145800|CENTRAL_LAB|9876543^Jones^Mary^L^MT^^NPI
+OBX|8|NM|2571-8^Triglycerides [Mass/volume] in Serum or Plasma^LN||180|mg/dL^milligrams per deciliter^UCUM|<150|H|||F|||20240315145800|CENTRAL_LAB|9876543^Jones^Mary^L^MT^^NPI
+NTE|1||LDL Cholesterol is critically elevated. Immediate clinical review recommended.
+NTE|2||Patient has reported fasting for 12 hours prior to specimen collection.

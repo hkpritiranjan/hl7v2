@@ -1,0 +1,100 @@
+{
+  "name": "hl7v2",
+  "version": "0.1.0",
+  "description": "Parse, query, modify and encode HL7 v2.x messages — zero dependencies, TypeScript native",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./segments": {
+      "import": {
+        "types": "./dist/segments/index.d.ts",
+        "default": "./dist/segments/index.js"
+      },
+      "require": {
+        "types": "./dist/segments/index.d.cts",
+        "default": "./dist/segments/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "format": "prettier --write ."
+  },
+  "keywords": [
+    "hl7",
+    "hl7v2",
+    "healthcare",
+    "fhir",
+    "mllp",
+    "adt",
+    "oru",
+    "orm",
+    "parser",
+    "encoder",
+    "typescript",
+    "health-informatics",
+    "interoperability",
+    "pid",
+    "obx",
+    "msh",
+    "clinical",
+    "hospital",
+    "ehr",
+    "his"
+  ],
+  "author": {
+    "name": "Pritiranjan Swain",
+    "email": "priti2chand@gmail.com",
+    "url": "https://github.com/hkpritiranjan"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hkpritiranjan/hl7v2.git"
+  },
+  "homepage": "https://github.com/hkpritiranjan/hl7v2#readme",
+  "bugs": {
+    "url": "https://github.com/hkpritiranjan/hl7v2/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.1.1",
+    "@vitest/coverage-v8": "^1.6.0",
+    "eslint": "^10.8.0",
+    "prettier": "^3.9.6",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^8.65.0",
+    "vitest": "^1.6.0"
+  }
+}
