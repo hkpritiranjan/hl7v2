@@ -1,5 +1,5 @@
 {
-  "name": "hl7v2",
+  "name": "@pritiranjan/hl7v2",
   "version": "0.1.0",
   "description": "Parse, query, modify and encode HL7 v2.x messages — zero dependencies, TypeScript native",
   "type": "module",

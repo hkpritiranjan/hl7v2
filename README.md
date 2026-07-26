@@ -2,7 +2,7 @@
 
 > Parse, query, build and re-encode HL7 v2.x messages — zero dependencies, TypeScript native.
 
-[![npm version](https://img.shields.io/npm/v/hl7v2.svg)](https://www.npmjs.com/package/hl7v2)
+[![npm version](https://img.shields.io/npm/v/@pritiranjan/hl7v2.svg)](https://www.npmjs.com/package/@pritiranjan/hl7v2)
 [![CI](https://github.com/hkpritiranjan/hl7v2/actions/workflows/ci.yml/badge.svg)](https://github.com/hkpritiranjan/hl7v2/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -41,11 +41,11 @@ HL7 v2 is the most widely deployed healthcare messaging standard in the world �
 ## Installation
 
 ```bash
-npm install hl7v2
+npm install @pritiranjan/hl7v2
 # or
-yarn add hl7v2
+yarn add @pritiranjan/hl7v2
 # or
-pnpm add hl7v2
+pnpm add @pritiranjan/hl7v2
 ```
 
 **Requires Node.js ≥ 18.** No runtime dependencies.
@@ -55,8 +55,8 @@ pnpm add hl7v2
 ## Quick start
 
 ```typescript
-import { parse, get, segment, segments, encode } from 'hl7v2';
-import { PID, OBX } from 'hl7v2/segments';
+import { parse, get, segment, segments, encode } from '@pritiranjan/hl7v2';
+import { PID, OBX } from '@pritiranjan/hl7v2/segments';
 
 const raw = `MSH|^~\\&|LAB|HOSPITAL|EHR|FACILITY|20240315150055||ORU^R01^ORU_R01|MSG001|P|2.5.1
 PID|1||MRN123^^^HOSPITAL^MR||Doe^John^A||19800305|M
@@ -128,7 +128,7 @@ Parse an HL7 v2 message string into a structured object.
 - `HL7ParseError` — when a segment identifier or structure is malformed
 
 ```typescript
-import { parse } from 'hl7v2';
+import { parse } from '@pritiranjan/hl7v2';
 
 const msg = parse(rawString);
 // msg.version, msg.messageType, msg.segments, ...
@@ -157,7 +157,7 @@ Encode a parsed message back into a raw HL7 string.
 **Round-trip guarantee**: when called on a message parsed with default options (`decodeEscapes` not set to `true`), `encode(parse(raw))` is byte-identical to `raw.trim()`.
 
 ```typescript
-import { parse, encode } from 'hl7v2';
+import { parse, encode } from '@pritiranjan/hl7v2';
 
 const msg  = parse(rawString);
 const back = encode(msg);              // identical to input
@@ -175,7 +175,7 @@ All field addresses are **1-based**, matching the HL7 specification directly.
 Return the first matching segment. Throws `SegmentNotFoundError` if absent.
 
 ```typescript
-import { segment } from 'hl7v2';
+import { segment } from '@pritiranjan/hl7v2';
 
 const pid = segment(msg, 'PID');
 
@@ -188,7 +188,7 @@ const obx2 = segment(msg, 'OBX', { segmentIndex: 2 });
 Return all matching segments as an array. Returns `[]`, never throws.
 
 ```typescript
-import { segments } from 'hl7v2';
+import { segments } from '@pritiranjan/hl7v2';
 
 const allOBX = segments(msg, 'OBX');
 ```
@@ -196,7 +196,7 @@ const allOBX = segments(msg, 'OBX');
 #### `hasSegment(msg, id)`
 
 ```typescript
-import { hasSegment } from 'hl7v2';
+import { hasSegment } from '@pritiranjan/hl7v2';
 
 if (hasSegment(msg, 'PV1')) { /* ... */ }
 ```
@@ -206,7 +206,7 @@ if (hasSegment(msg, 'PV1')) { /* ... */ }
 Extract a scalar string value. Returns `''` for missing elements — never throws.
 
 ```typescript
-import { get } from 'hl7v2';
+import { get } from '@pritiranjan/hl7v2';
 
 get(msg, 'PID', 3)           // PID.3   — patient identifier
 get(msg, 'PID', 5, 1)        // PID.5.1 — family name
@@ -225,7 +225,7 @@ get(msg, 'PID', 3, 1, 1, { repetition: 2 })
 Like `get()` but operates on a pre-fetched `HL7Segment` — useful when iterating repeating segments.
 
 ```typescript
-import { segments, getFromSegment } from 'hl7v2';
+import { segments, getFromSegment } from '@pritiranjan/hl7v2';
 
 for (const obx of segments(msg, 'OBX')) {
   const value = getFromSegment(obx, msg, 5);   // OBX.5
@@ -238,7 +238,7 @@ for (const obx of segments(msg, 'OBX')) {
 Return all repetitions of a field as a `string[][][]` — one entry per repetition preserving the `[component][subComponent]` structure.
 
 ```typescript
-import { getRepetitions } from 'hl7v2';
+import { getRepetitions } from '@pritiranjan/hl7v2';
 
 // PID.3 repeats for multiple patient identifiers
 const ids = getRepetitions(msg, 'PID', 3);
@@ -254,8 +254,8 @@ ids[1]?.[0]?.[0]  // → 'SSN456'      (second identifier value)
 Import from `hl7v2/segments`. Each class wraps a raw `HL7Segment` and exposes named, documented accessor methods.
 
 ```typescript
-import { parse, segment, segments } from 'hl7v2';
-import { MSH, PID, PV1, OBX } from 'hl7v2/segments';
+import { parse, segment, segments } from '@pritiranjan/hl7v2';
+import { MSH, PID, PV1, OBX } from '@pritiranjan/hl7v2/segments';
 
 const msg = parse(raw);
 
@@ -306,8 +306,8 @@ obx.isCritical()                   // false  (true for HH or LL flags)
 ### Escape sequences
 
 ```typescript
-import { decodeEscapes, encodeEscapes } from 'hl7v2';
-import { DEFAULT_ENCODING } from 'hl7v2';
+import { decodeEscapes, encodeEscapes } from '@pritiranjan/hl7v2';
+import { DEFAULT_ENCODING } from '@pritiranjan/hl7v2';
 
 // Decode HL7 escape sequences to their plain-text equivalents
 decodeEscapes('Dr\\S\\Smith', DEFAULT_ENCODING)   // 'Dr^Smith'
@@ -325,7 +325,7 @@ Supported sequences: `\F\`, `\S\`, `\T\`, `\R\`, `\E\`, `\H\`, `\N\`, `\.br\`, `
 ### Date / time utilities
 
 ```typescript
-import { parseHL7DateTime, formatHL7DateTime, formatHL7Date } from 'hl7v2';
+import { parseHL7DateTime, formatHL7DateTime, formatHL7Date } from '@pritiranjan/hl7v2';
 
 // Parse any HL7 date/time format → Date in UTC
 parseHL7DateTime('20240315143022')         // Date: 2024-03-15 14:30:22 UTC
@@ -371,8 +371,8 @@ type HL7Field = string[][][];
 ### Parse a lab result and alert on critical values
 
 ```typescript
-import { parse, segments } from 'hl7v2';
-import { OBX } from 'hl7v2/segments';
+import { parse, segments } from '@pritiranjan/hl7v2';
+import { OBX } from '@pritiranjan/hl7v2/segments';
 
 function findCriticalResults(rawMessage: string) {
   const msg = parse(rawMessage);
@@ -392,7 +392,7 @@ function findCriticalResults(rawMessage: string) {
 ### Build an ACK response
 
 ```typescript
-import { parse, encode, get } from 'hl7v2';
+import { parse, encode, get } from '@pritiranjan/hl7v2';
 
 function buildAck(rawMessage: string, ackCode: 'AA' | 'AE' | 'AR'): string {
   const msg = parse(rawMessage);
@@ -409,7 +409,7 @@ function buildAck(rawMessage: string, ackCode: 'AA' | 'AE' | 'AR'): string {
 ### Extract all patient identifiers
 
 ```typescript
-import { parse, getRepetitions } from 'hl7v2';
+import { parse, getRepetitions } from '@pritiranjan/hl7v2';
 
 function getPatientIds(rawMessage: string) {
   const msg = parse(rawMessage);
