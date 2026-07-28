@@ -18,6 +18,10 @@ HL7 v2 is the most widely deployed healthcare messaging standard in the world �
 - **Zero runtime dependencies** — nothing to audit, nothing to break
 - **1-based HL7 addressing** — `get(msg, 'PID', 5, 1)` maps directly to the HL7 spec's `PID.5.1`
 - **Typed segment helpers** — `new PID(seg, msg.encoding).patientName()` returns `{ family, given, middle, ... }` not a raw string
+- **ACK generator** — `createAck(msg, 'AA')` produces a complete, standards-compliant acknowledgement in one call
+- **MLLP transport** — `MllpServer` / `MllpClient` via `@pritiranjan/hl7v2/mllp` — the TCP framing protocol used by every real-world interface engine
+- **Message builder** — `new HL7Builder('ADT', 'A01', opts).addSegment(...).build()` constructs messages from scratch with a fluent API
+- **6 additional typed segments** — EVN, MSA, ORC, OBR, DG1, NK1 with full accessor coverage
 - **ESM + CJS** — works in Node.js, Deno, Bun, and bundlers (Webpack, Vite, esbuild)
 
 ---
@@ -32,8 +36,11 @@ HL7 v2 is the most widely deployed healthcare messaging standard in the world �
   - [encode()](#encode)
   - [Query API](#query-api)
   - [Typed segment helpers](#typed-segment-helpers)
+  - [Message builder](#message-builder)
   - [Escape sequences](#escape-sequences)
   - [Date / time utilities](#date--time-utilities)
+  - [ACK generation](#ack-generation)
+  - [MLLP transport](#mllp-transport)
 - [HL7Message structure](#hl7message-structure)
 - [Real-world examples](#real-world-examples)
 - [Live demo](#live-demo)
@@ -305,6 +312,116 @@ obx.isFinal()                      // true
 obx.isCritical()                   // false  (true for HH or LL flags)
 ```
 
+**Additional typed segments** added in v0.2.0:
+
+| Segment | Description | Key accessors |
+|---------|-------------|---------------|
+| `EVN` | Event type | `eventTypeCode()`, `recordedDateTime()`, `operatorId()` |
+| `MSA` | Message acknowledgement | `acknowledgementCode()`, `messageControlId()`, `isAccepted()`, `isError()` |
+| `ORC` | Common order | `orderControl()`, `orderStatus()`, `orderingProvider()`, `callBackPhoneNumber()` |
+| `OBR` | Observation request | `universalServiceIdentifier()`, `orderingProvider()`, `resultStatus()`, `isFinal()`, `diagnosticServiceSectionId()` |
+| `DG1` | Diagnosis | `diagnosisCode()`, `diagnosisType()`, `isPrincipal()`, `isFinal()` |
+| `NK1` | Next of kin | `name()`, `relationship()`, `address()`, `startDate()`, `sex()`, `dateOfBirth()` |
+
+```typescript
+import { parse, segment, segments } from '@pritiranjan/hl7v2';
+import { EVN, MSA, ORC, OBR, DG1, NK1 } from '@pritiranjan/hl7v2/segments';
+
+// EVN — Event type (ADT messages)
+const evn = new EVN(segment(msg, 'EVN'), msg.encoding);
+evn.eventTypeCode()           // 'A01'
+evn.recordedDateTime()        // Date | undefined
+evn.operatorId()              // 'OP123'
+
+// MSA — Message acknowledgement
+const msa = new MSA(segment(ackMsg, 'MSA'), ackMsg.encoding);
+msa.acknowledgementCode()     // 'AA' | 'AE' | 'AR'
+msa.messageControlId()        // 'MSG000001'
+msa.isAccepted()              // true when code === 'AA'
+msa.isError()                 // true when code === 'AE'
+
+// ORC — Common order header
+const orc = new ORC(segment(msg, 'ORC'), msg.encoding);
+orc.orderControl()            // 'NW' | 'CA' | 'SC' | ...
+orc.orderStatus()             // 'IP' | 'CM' | 'CA' | ...
+orc.orderingProvider()        // { id, family, given, credential }
+orc.callBackPhoneNumber()     // '555-123-4567'
+
+// OBR — Observation request (ORU messages)
+const obr = new OBR(segment(msg, 'OBR'), msg.encoding);
+obr.universalServiceIdentifier()
+// → { code: '24323-8', description: 'Comprehensive metabolic panel', codingSystem: 'LN' }
+obr.orderingProvider()        // { id, family, given, credential }
+obr.resultStatus()            // 'F' | 'P' | 'C' | 'I' | ...
+obr.isFinal()                 // true
+obr.diagnosticServiceSectionId() // 'CH' | 'HM' | 'MB' | 'RAD' | ...
+
+// DG1 — Diagnosis (may repeat)
+const diagnoses = segments(msg, 'DG1').map(s => new DG1(s, msg.encoding));
+diagnoses[0]?.diagnosisCode()
+// → { code: 'J18.9', description: 'Pneumonia unspecified', codingSystem: 'I10' }
+diagnoses[0]?.diagnosisType()    // 'A' (Admitting) | 'W' (Working) | 'F' (Final)
+diagnoses[0]?.isPrincipal()      // true when type === 'A' or priority === 1
+diagnoses[0]?.diagnosisDateTime() // Date | undefined
+
+// NK1 — Next of kin (may repeat)
+const contacts = segments(msg, 'NK1').map(s => new NK1(s, msg.encoding));
+contacts[0]?.name()           // { family: 'Doe', given: 'Jane', middle: 'M', ... }
+contacts[0]?.relationship()   // { code: 'SPO', description: 'Spouse' }
+contacts[0]?.address()        // { streetAddress, city, state, postalCode, country }
+contacts[0]?.startDate()      // Date | undefined
+contacts[0]?.sex()            // 'F' | 'M' | ...
+contacts[0]?.dateOfBirth()    // Date | undefined
+```
+
+---
+
+### Message builder
+
+`HL7Builder` constructs HL7 v2 messages from scratch with a fluent API.
+It auto-generates a valid MSH segment and accepts raw segment strings appended in order.
+
+```typescript
+import { HL7Builder } from '@pritiranjan/hl7v2';
+
+const msg = new HL7Builder('ADT', 'A01', {
+  sendingApplication:   'EHR_SYSTEM',
+  sendingFacility:      'MAIN_CAMPUS',
+  receivingApplication: 'BILLING',
+  receivingFacility:    'BILLING_FAC',
+  version:              '2.5.1',
+  processingId:         'P',
+  messageControlId:     'MSG20240315001',  // auto-generated if omitted
+})
+  .addSegment('EVN|A01|20240315143022')
+  .addSegment('PID|1||MRN123^^^HOSP^MR||DOE^JOHN^A||19800305|M')
+  .addSegment('PV1|1|I|ICU^3^A')
+  .build();
+
+msg.messageType    // { type: 'ADT', event: 'A01', structure: undefined }
+msg.version        // '2.5.1'
+msg.segments       // [MSH, EVN, PID, PV1]
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `sendingApplication` | `string` | `''` | MSH.3 |
+| `sendingFacility` | `string` | `''` | MSH.4 |
+| `receivingApplication` | `string` | `''` | MSH.5 |
+| `receivingFacility` | `string` | `''` | MSH.6 |
+| `version` | `string` | `'2.5'` | MSH.12 — HL7 version |
+| `processingId` | `'P'\|'D'\|'T'` | `'P'` | MSH.11 |
+| `messageControlId` | `string` | auto (timestamp) | MSH.10 |
+| `encoding` | `EncodingChars` | `\|^~\&` | Override if non-standard |
+| `lineEnding` | `'\r'\|'\n'\|'\r\n'` | `'\r'` | Segment separator |
+
+Use `toString()` to get the raw string without parsing:
+
+```typescript
+const raw = builder.toString()
+// 'MSH|^~\&|EHR||BILLING||20240315143022||ADT^A01|MSG001|P|2.5.1\rPID|1||MRN123'
+```
+
 ---
 
 ### Escape sequences
@@ -342,6 +459,143 @@ parseHL7DateTime('')                      // → undefined (empty = absent)
 formatHL7DateTime(new Date())   // '20240315143022'
 formatHL7Date(new Date())       // '20240315'
 ```
+
+---
+
+### ACK generation
+
+```typescript
+function createAck(inbound: HL7Message, code: AckCode, options?: AckOptions): string
+```
+
+Generate a valid HL7 ACK message from any parsed inbound message. The function:
+- Swaps sender and receiver in MSH so the ACK routes back to the originator
+- Sets `MSH.9` to `ACK` and generates a new `MSH.10` control ID
+- Mirrors version, processing ID, and encoding characters from the inbound message
+- Appends an `MSA` segment with the acknowledgement code and original control ID
+
+```typescript
+import { parse, createAck } from '@pritiranjan/hl7v2';
+
+const msg = parse(rawMessage);
+
+const accept = createAck(msg, 'AA');
+// MSH|^~\&|RecvApp|RecvFac|SendApp|SendFac|20240315143022||ACK|ACK20240315143022|P|2.5.1
+// MSA|AA|MSG000001
+
+const reject = createAck(msg, 'AR', { text: 'Duplicate message control ID' });
+// MSH|^~\&|RecvApp|RecvFac|SendApp|SendFac|20240315143022||ACK|ACK20240315143022|P|2.5.1
+// MSA|AR|MSG000001|Duplicate message control ID
+```
+
+**`AckCode`** — `'AA'` (Application Accept) | `'AE'` (Application Error) | `'AR'` (Application Reject)
+
+**`AckOptions`**
+
+| Option | Type | Description |
+|---|---|---|
+| `text` | `string` | Free-text note placed in `MSA.3`. Omit to leave `MSA.3` empty. |
+| `messageControlId` | `string` | Override the generated `MSH.10`. Defaults to `ACK` + timestamp. |
+
+---
+
+### MLLP transport
+
+MLLP (Minimal Lower Layer Protocol) is the standard TCP framing used in clinical environments. Every HL7 v2 interface engine speaks it — Epic, Cerner, Mirth Connect, Rhapsody, and Azure Health Data Services all send and receive MLLP frames.
+
+```typescript
+import { MllpServer, MllpClient, frame, unframe } from '@pritiranjan/hl7v2/mllp';
+```
+
+> **Node.js only** — this sub-path uses `node:net` and is not available in browser bundles.
+
+#### Framing utilities
+
+```typescript
+function frame(message: string): Buffer
+function unframe(buffer: Buffer): { messages: string[]; remainder: Buffer }
+```
+
+Use these when you manage sockets yourself (Lambda, Bun, Deno, custom TCP handlers).
+
+```typescript
+import { frame, unframe } from '@pritiranjan/hl7v2/mllp';
+import { encode } from '@pritiranjan/hl7v2';
+
+// Wrap a message for transmission
+const packet = frame(encode(msg));
+socket.write(packet);
+
+// Parse incoming data stream (TCP may split or combine frames)
+let buf = Buffer.alloc(0);
+socket.on('data', chunk => {
+  buf = Buffer.concat([buf, chunk]);
+  const { messages, remainder } = unframe(buf);
+  buf = remainder;
+  for (const raw of messages) handle(raw);
+});
+```
+
+#### MllpServer
+
+Listen for inbound MLLP connections. Each decoded message is emitted with an `ack` callback — call it to send the response.
+
+```typescript
+import { parse, createAck } from '@pritiranjan/hl7v2';
+import { MllpServer } from '@pritiranjan/hl7v2/mllp';
+
+const server = new MllpServer({ port: 2575 });
+
+server.on('message', (raw, ack) => {
+  const msg = parse(raw);
+  console.log(`Received ${msg.messageType.type} ${msg.messageControlId}`);
+  ack(createAck(msg, 'AA'));
+});
+
+server.on('error', err => console.error('MLLP error:', err));
+
+await server.listen();
+console.log(`Listening on port ${server.address?.port}`);
+
+// Graceful shutdown
+process.on('SIGTERM', () => server.close());
+```
+
+**`MllpServerOptions`**
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `port` | `number` | — | TCP port. Pass `0` to let the OS pick a free port. |
+| `host` | `string` | all interfaces | Network interface to bind. |
+| `socketTimeout` | `number` | `0` (disabled) | Milliseconds of inactivity before forcibly closing a client socket. |
+
+#### MllpClient
+
+Send MLLP-framed messages to a remote server and receive the ACK.
+
+```typescript
+import { encode } from '@pritiranjan/hl7v2';
+import { MllpClient } from '@pritiranjan/hl7v2/mllp';
+
+const client = new MllpClient({ host: '10.0.1.42', port: 2575 });
+await client.connect();
+
+const ackRaw = await client.send(encode(outboundMsg));
+console.log('ACK received:', ackRaw);
+
+await client.close();
+```
+
+Responses are matched to sends in FIFO order, which is the behaviour mandated by the MLLP specification. The client maintains a single persistent connection — reconnect by calling `close()` then `connect()` again.
+
+**`MllpClientOptions`**
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `host` | `string` | — | Remote MLLP server hostname or IP. |
+| `port` | `number` | — | Remote MLLP server port. |
+| `connectTimeout` | `number` | `10 000` | TCP connection timeout in ms. |
+| `responseTimeout` | `number` | `30 000` | Per-message ACK wait timeout in ms. |
 
 ---
 
@@ -396,17 +650,10 @@ function findCriticalResults(rawMessage: string) {
 ### Build an ACK response
 
 ```typescript
-import { parse, encode, get } from '@pritiranjan/hl7v2';
+import { parse, createAck } from '@pritiranjan/hl7v2';
 
 function buildAck(rawMessage: string, ackCode: 'AA' | 'AE' | 'AR'): string {
-  const msg = parse(rawMessage);
-  const now = new Date();
-  const ts  = `${now.getUTCFullYear()}${String(now.getUTCMonth() + 1).padStart(2, '0')}${String(now.getUTCDate()).padStart(2, '0')}`;
-
-  return [
-    `MSH|^~\\&|EHR|FACILITY|${msg.sendingApplication}|${msg.sendingFacility}|${ts}||ACK^${msg.messageType.event}|ACK${msg.messageControlId}|P|${msg.version}`,
-    `MSA|${ackCode}|${msg.messageControlId}`,
-  ].join(msg.lineEnding);
+  return createAck(parse(rawMessage), ackCode);
 }
 ```
 

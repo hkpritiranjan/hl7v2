@@ -1,6 +1,6 @@
 {
   "name": "@pritiranjan/hl7v2",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Parse, query, modify and encode HL7 v2.x messages — zero dependencies, TypeScript native",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -25,6 +25,16 @@
       "require": {
         "types": "./dist/segments/index.d.cts",
         "default": "./dist/segments/index.cjs"
+      }
+    },
+    "./mllp": {
+      "import": {
+        "types": "./dist/mllp/index.d.ts",
+        "default": "./dist/mllp/index.js"
+      },
+      "require": {
+        "types": "./dist/mllp/index.d.cts",
+        "default": "./dist/mllp/index.cjs"
       }
     }
   },

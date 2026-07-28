@@ -17,6 +17,12 @@ export type { GetOptions } from './query.js';
 export { decodeEscapes, encodeEscapes } from './escape.js';
 export { parseHL7DateTime, formatHL7DateTime, formatHL7Date } from './datetime.js';
 
+export { createAck } from './ack.js';
+export type { AckCode, AckOptions } from './ack.js';
+
+export { HL7Builder } from './builder.js';
+export type { HL7BuilderOptions } from './builder.js';
+
 export type {
   EncodingChars,
   HL7Field,

@@ -29,6 +29,10 @@ export default tseslint.config(
       '@typescript-eslint/no-redundant-type-constituents': 'off',
       // Disable: useless constructors are intentional subclass boilerplate for IDE discoverability
       '@typescript-eslint/no-useless-constructor': 'off',
+      // Allow numbers in template literals — `${port}` and `${timeout}ms` are idiomatic
+      '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
+      // Disable: declare-interface + class merging is the standard pattern for typed EventEmitter subclasses
+      '@typescript-eslint/no-unsafe-declaration-merging': 'off',
     },
   },
   {

@@ -4,6 +4,7 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     'segments/index': 'src/segments/index.ts',
+    'mllp/index': 'src/mllp/index.ts',
   },
   format: ['esm', 'cjs'],
   dts: true,
